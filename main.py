@@ -29,18 +29,19 @@ preto = (0, 0, 0)
 
 #Carregar imagens
 fundo = pygame.image.load("Bases/FUNDO.png")
-fundoDead = pygame.image.load("Bases/backgroundDead.jpg")
-fundoStart = pygame.image.load("Bases/backgroundStart.jpg")
+fundoDead = pygame.image.load("Bases/Tela de morte.png")
+fundoStart = pygame.image.load("Bases/TELA DE INICIO.png")
 void = pygame.image.load("Bases/VOID.png")
 void = pygame.transform.scale(void, (220,250))
 Inimigo_do_void = pygame.image.load("Bases/inimigo.png")
 Inimigo_do_void = pygame.transform.scale(Inimigo_do_void, (280,250))
 
 #Carregar sons e fonte
-missileSound = pygame.mixer.Sound("Bases/missile.wav")
-explosaoSound = pygame.mixer.Sound("Bases/explosao.wav")
-pygame.mixer.music.load("Bases/ironsound.mp3")
+som_inimgo = pygame.mixer.Sound("Bases/Som inimigo.wav")
+musica_de_morte = pygame.mixer.Sound("Bases/Musica de morte.mp3")
+#pygame.mixer.music.load("Bases/combate.wav")
 fonteMenu = pygame.font.SysFont("comicsans",18)
+
 
 #Variáveis iniciais do jogo
 def jogar():
@@ -55,7 +56,7 @@ def jogar():
     posicaoYMissel = 100
     velocidadeMissel = 2
     pontos = 0
-    pygame.mixer.Sound.play(missileSound)
+    pygame.mixer.Sound.play(som_inimgo)
     pygame.mixer.music.play(-1)
     dificuldade = 20
 
@@ -102,7 +103,7 @@ def jogar():
 
         #Quando o míssil sai da tela
         if posicaoXMissel < -125:
-            pygame.mixer.Sound.play(missileSound)
+            pygame.mixer.Sound.play(som_inimgo)
             posicaoXMissel = 800
             pontos = pontos + 1
             velocidadeMissel = velocidadeMissel + 1
@@ -128,6 +129,7 @@ def jogar():
             if len( list( set(pixelsMisselX).intersection(set(pixelsPersonaX))   ) )  > dificuldade:
                 escreverDados(nome, pontos)
                 dead()
+                return
                 
             else:
                 print("Ainda Vivo, mas por pouco!")
@@ -140,9 +142,11 @@ def jogar():
 
 #Função dead()
 def dead():
+
     #Parar música e tocar explosão
     pygame.mixer.music.stop()
-    pygame.mixer.Sound.play(explosaoSound)
+    pygame.mixer.Sound.play(musica_de_morte)
+    som_inimgo.stop()
 
     #Botões da tela de morte
     larguraButtonStart = 150
@@ -170,6 +174,16 @@ def dead():
                     #pygame.mixer.music.play(-1)
                     larguraButtonStart = 150
                     alturaButtonStart  = 40
+
+                    musica_de_morte.stop()
+                    som_inimgo.stop()
+                    pygame.mixer.music.stop()
+                    pygame.mixer.music.load("Bases/combate.wav")
+                    pygame.mixer.music.play(-1)
+
+                    jogar()
+                    return
+
                     jogar()
                 if quitButton.collidepoint(evento.pos):
                     #pygame.mixer.music.play(-1)
@@ -219,6 +233,9 @@ def start():
                     #pygame.mixer.music.play(-1)
                     larguraButtonStart = 150
                     alturaButtonStart  = 40
+                    pygame.mixer.music.stop()
+                    pygame.mixer.music.load("Bases/combate.wav")
+                    pygame.mixer.music.play(-1)
                     jogar()
                 if quitButton.collidepoint(evento.pos):
                     #pygame.mixer.music.play(-1)
@@ -243,4 +260,6 @@ def start():
         pygame.display.update()
         relogio.tick(60)
           #Começar o jogo 
+pygame.mixer.music.load("Bases/Som inicio do jogo.mp3")
+pygame.mixer.music.play(-1)
 start()
