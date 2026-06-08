@@ -2,8 +2,10 @@ import pygame
 import random
 from recursos.funcoes import inicializarBancoDeDados, limpar_tela, escreverDados, maior_pontuador
 from recursos.funcoes import verificar_vida_extra
+from recursos.funcoes import dano_inimigo
 
 #Preparação inicial
+
 limpar_tela()
 inicializarBancoDeDados()
 nome_maior, maior_pontos, dataJogada = maior_pontuador()
@@ -36,10 +38,13 @@ void = pygame.image.load("Bases/VOID.png")
 void = pygame.transform.scale(void, (220,250))
 Inimigo_do_void = pygame.image.load("Bases/inimigo.png")
 Inimigo_do_void = pygame.transform.scale(Inimigo_do_void, (280,250))
-
+ataque = pygame.image.load("Bases/Ataque.png")
+ataque = pygame.transform.scale(ataque, (180, 120))
+ataque_esquerda =  pygame.transform.flip(ataque, True, False)
 #Carregar sons e fonte
 som_inimgo = pygame.mixer.Sound("Bases/Som inimigo.wav")
 musica_de_morte = pygame.mixer.Sound("Bases/Musica de morte.mp3")
+som_ataque = pygame.mixer.Sound("Bases/som ataque.mp3")
 #pygame.mixer.music.load("Bases/combate.wav")
 fonteMenu = pygame.font.SysFont("comicsans",18)
 
@@ -55,7 +60,17 @@ def jogar():
     velocidadeinimigo = 2
     pontos = 0
     vidas = 3 
+    vidas_inimigo = 3
     UltimoBonus= 0
+    ultimo_ataque = 0
+    cooldown_ataque = 500
+    mostrar_ataque = False
+    tempo_ataque = 0
+    duracao_ataque = 150
+    direcao = "direita"
+    direcao_ataque = direcao
+    posicaoXataque = 0
+    posicaoYataque = 0
     pygame.mixer.Sound.play(som_inimgo)
     pygame.mixer.music.play(-1)
     dificuldade = 20
@@ -66,12 +81,38 @@ def jogar():
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT: #Fechar janela
                 quit()
-                movimentoXPersona = 0
-    
+
+
+
+            elif evento.type == pygame.MOUSEBUTTONDOWN:
+                tempo_atual = pygame.time.get_ticks()
+                if tempo_atual - ultimo_ataque >= cooldown_ataque:
+                    ultimo_ataque = tempo_atual
+
+                    mostrar_ataque = True
+                    tempo_ataque = tempo_atual
+                    posicaoXataque = posicaoXPersona
+                    direcao_ataque = direcao
+                    pygame.mixer.Sound.play(som_ataque)
+
+                    if abs(posicaoXPersona - posicaoXinimigo) < 150:
+                        vidas_inimigo = dano_inimigo(vidas_inimigo)
+                        if vidas_inimigo <= 0:
+                            pontos += 1
+
+                            vidas, UltimoBonus = verificar_vida_extra(pontos,vidas,UltimoBonus)
+
+                            vidas_inimigo = 3
+                            posicaoXinimigo = 860
+                            posicaoYinimigo = 385
+
+
             elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_RIGHT or  evento.type == pygame.KEYDOWN and evento.key == pygame.K_d:
                 movimentoXPersona = velocidadeMovPersona
+                direcao = "direita"
             elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_LEFT or  evento.type == pygame.KEYDOWN and evento.key == pygame.K_a:
                 movimentoXPersona = -velocidadeMovPersona
+                direcao = "esquerda"
             elif evento.type == pygame.KEYUP and evento.key == pygame.K_RIGHT or evento.type == pygame.KEYUP and evento.key == pygame.K_d:
                 movimentoXPersona = 0
             elif evento.type == pygame.KEYUP and evento.key == pygame.K_LEFT or evento.type == pygame.KEYUP and evento.key == pygame.K_a:
@@ -87,10 +128,10 @@ def jogar():
             posicaoXPersona = 860
      
     
-            #Movimento do míssil (sempre para a esquerda)
+            #Movimento do inimigo (sempre para a esquerda)
         posicaoXinimigo = posicaoXinimigo - velocidadeinimigo
 
-        #Quando o míssil sai da tela
+        #Quando o inimigo sai da tela
         if posicaoXinimigo < -125:
             pygame.mixer.Sound.play(som_inimgo)
             posicaoXinimigo = 800
@@ -111,9 +152,21 @@ def jogar():
         
         #Desenhar personagem, inimigo e pontos
         tela.blit(void, (posicaoXPersona,posicaoYPersona))
+        if mostrar_ataque:
+            if direcao_ataque == "direita":
+                tela.blit(ataque,(posicaoXataque +120, 430))
+            else: 
+                tela.blit(ataque_esquerda, (posicaoXataque - 80, 430))
+
+            if pygame.time.get_ticks() - tempo_ataque > duracao_ataque:
+                mostrar_ataque = False
+                
         tela.blit( Inimigo_do_void, (posicaoXinimigo, posicaoYinimigo) )
         texto = fonteMenu.render("Pontos: "+str(pontos), True, branco)
         textoVidas= fonteMenu.render("Vidas:" + str(vidas), True, branco)
+        textoVidaInimigo = fonteMenu.render("vidas_inimigo: " + str(vidas_inimigo),True,branco)
+
+        tela.blit(textoVidaInimigo, (700,65))
         tela.blit(textoVidas,(700,40))
         tela.blit(texto, (700,15))
             
@@ -127,7 +180,7 @@ def jogar():
                 vidas = vidas - 1
                 posicaoXinimigo = 860
                 posicaoYinimigo = 385
-
+                vidas_inimigo = 3 
                 if vidas <= 0:
                     escreverDados(nome,pontos)
                 
@@ -146,7 +199,7 @@ def jogar():
 #Função dead()
 def dead():
 
-    #Parar música e tocar explosão
+    #Parar música e tocar musica de morte
     pygame.mixer.music.stop()
     pygame.mixer.Sound.play(musica_de_morte)
     som_inimgo.stop()

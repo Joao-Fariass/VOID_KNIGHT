@@ -5,7 +5,13 @@ from datetime import datetime
 
 
 
+def dano_inimigo(vida_inimigo):
+    vida_inimigo -= 1
 
+    if vida_inimigo < 0:
+        vida_inimigo = 0
+
+    return vida_inimigo
 
 def verificar_vida_extra(pontos, vidas, ultimo_bonus):
     if pontos % 10 == 0 and pontos > 0 and pontos != ultimo_bonus:
