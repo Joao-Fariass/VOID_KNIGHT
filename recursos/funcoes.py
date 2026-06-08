@@ -1,6 +1,44 @@
 import os, time
 import json
+import random
 from datetime import datetime
+
+
+
+
+
+def verificar_vida_extra(pontos, vidas, ultimo_bonus):
+    if pontos % 10 == 0 and pontos > 0 and pontos != ultimo_bonus:
+        vidas += 1
+        ultimo_bonus = pontos
+
+    return vidas, ultimo_bonus
+
+def gerar_inimigo_lado_aleatorio(largura_tela, altura_tela):
+    lado = random.choice(["esquerda", "direita", "cima", "baixo"])
+
+    if lado == "esquerda":
+        x = -50
+        y = random.randint(0, altura_tela)
+
+    elif lado == "direita":
+        x = largura_tela + 50
+        y = random.randint(0, altura_tela)
+
+    elif lado == "cima":
+        x = random.randint(0, largura_tela)
+        y = -50
+
+    else:  # baixo
+        x = random.randint(0, largura_tela)
+        y = altura_tela + 50
+
+    return x, y
+
+
+
+
+
 
 def limpar_tela():
     os.system("cls")

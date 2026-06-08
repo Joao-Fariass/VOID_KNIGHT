@@ -1,6 +1,7 @@
 import pygame
 import random
 from recursos.funcoes import inicializarBancoDeDados, limpar_tela, escreverDados, maior_pontuador
+from recursos.funcoes import verificar_vida_extra
 
 #Preparação inicial
 limpar_tela()
@@ -45,17 +46,16 @@ fonteMenu = pygame.font.SysFont("comicsans",18)
 
 #Variáveis iniciais do jogo
 def jogar():
-    fundoMov1 = 0
-    fundoMov2 = 1129
     posicaoXPersona = 0
-    posicaoYPersona = 60
+    posicaoYPersona = 385
     movimentoXPersona  = 0
-    movimentoYPersona  = 0
     velocidadeMovPersona = 5
-    posicaoXMissel = 800
-    posicaoYMissel = 100
-    velocidadeMissel = 2
+    posicaoXinimigo = 860
+    posicaoYinimigo = 385
+    velocidadeinimigo = 2
     pontos = 0
+    vidas = 3 
+    UltimoBonus= 0
     pygame.mixer.Sound.play(som_inimgo)
     pygame.mixer.music.play(-1)
     dificuldade = 20
@@ -67,14 +67,7 @@ def jogar():
             if evento.type == pygame.QUIT: #Fechar janela
                 quit()
                 movimentoXPersona = 0
-            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_UP or evento.type == pygame.KEYDOWN and evento.key == pygame.K_w:
-                movimentoYPersona = -velocidadeMovPersona
-            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_DOWN or evento.type == pygame.KEYDOWN and evento.key == pygame.K_s:
-                movimentoYPersona = velocidadeMovPersona
-            elif evento.type == pygame.KEYUP and evento.key == pygame.K_UP or evento.type == pygame.KEYUP and evento.key == pygame.K_w:
-                movimentoYPersona = 0
-            elif evento.type == pygame.KEYUP and evento.key == pygame.K_DOWN or evento.type == pygame.KEYUP and evento.key == pygame.K_s:
-                movimentoYPersona = 0
+    
             elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_RIGHT or  evento.type == pygame.KEYDOWN and evento.key == pygame.K_d:
                 movimentoXPersona = velocidadeMovPersona
             elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_LEFT or  evento.type == pygame.KEYDOWN and evento.key == pygame.K_a:
@@ -86,28 +79,30 @@ def jogar():
                 
         #Atualizar posição do personagem
         posicaoXPersona = posicaoXPersona + movimentoXPersona          
-        posicaoYPersona = posicaoYPersona + movimentoYPersona    
-
+       
         #Limitar personagem dentro da tela        
-        if posicaoXPersona < 0 :
-            posicaoXPersona = 0
-        elif posicaoXPersona > 880:
-            posicaoXPersona = 880
-        if posicaoYPersona < 0 :
-            posicaoYPersona = 0
-        elif posicaoYPersona > 650:
-            posicaoYPersona = 650
-            
+        if posicaoXPersona < -70:
+            posicaoXPersona = -70
+        elif posicaoXPersona > 860:
+            posicaoXPersona = 860
+     
+    
             #Movimento do míssil (sempre para a esquerda)
-        posicaoXMissel = posicaoXMissel - velocidadeMissel
+        posicaoXinimigo = posicaoXinimigo - velocidadeinimigo
 
         #Quando o míssil sai da tela
-        if posicaoXMissel < -125:
+        if posicaoXinimigo < -125:
             pygame.mixer.Sound.play(som_inimgo)
-            posicaoXMissel = 800
+            posicaoXinimigo = 800
             pontos = pontos + 1
-            velocidadeMissel = velocidadeMissel + 1
-            posicaoYMissel = random.randint(0,200)
+            vidas, UltimoBonus = verificar_vida_extra (
+                pontos,
+                vidas,
+                UltimoBonus
+            )
+
+            velocidadeinimigo = velocidadeinimigo + 1
+            posicaoYinimigo = random.randint(0,200)
                             
         #Desenhar fundo                            
         tela.fill(branco)
@@ -116,20 +111,28 @@ def jogar():
         
         #Desenhar personagem, inimigo e pontos
         tela.blit(void, (posicaoXPersona,posicaoYPersona))
-        tela.blit( Inimigo_do_void, (posicaoXMissel, posicaoYMissel) )
+        tela.blit( Inimigo_do_void, (posicaoXinimigo, posicaoYinimigo) )
         texto = fonteMenu.render("Pontos: "+str(pontos), True, branco)
+        textoVidas= fonteMenu.render("Vidas:" + str(vidas), True, branco)
+        tela.blit(textoVidas,(700,40))
         tela.blit(texto, (700,15))
             
             #Colisão
-        pixelsPersonaX = list(range(posicaoXPersona, posicaoXPersona+116))
-        pixelsPersonaY = list(range(posicaoYPersona, posicaoYPersona+51))
-        pixelsMisselX = list(range(posicaoXMissel, posicaoXMissel + 125))
-        pixelsMisselY = list(range(posicaoYMissel, posicaoYMissel + 25))
-        if  len( list( set(pixelsMisselY).intersection(set(pixelsPersonaY))) ) > dificuldade:
-            if len( list( set(pixelsMisselX).intersection(set(pixelsPersonaX))   ) )  > dificuldade:
-                escreverDados(nome, pontos)
-                dead()
-                return
+        pixelsPersonaX = list(range(posicaoXPersona+100, posicaoXPersona+140))
+        pixelsPersonaY = list(range(posicaoYPersona+40, posicaoYPersona+220))
+        pixels_inimigoX = list(range(posicaoXinimigo+130, posicaoXinimigo + 170))
+        pixels_inimigoY = list(range(posicaoYinimigo+50, posicaoYinimigo + 200))
+        if  len( list( set(pixels_inimigoY).intersection(set(pixelsPersonaY))) ) > dificuldade:
+            if len( list( set(pixels_inimigoX).intersection(set(pixelsPersonaX))   ) )  > dificuldade:
+                vidas = vidas - 1
+                posicaoXinimigo = 860
+                posicaoYinimigo = 385
+
+                if vidas <= 0:
+                    escreverDados(nome,pontos)
+                
+                    dead()
+                    return
                 
             else:
                 print("Ainda Vivo, mas por pouco!")
@@ -184,7 +187,7 @@ def dead():
                     jogar()
                     return
 
-                    jogar()
+                    
                 if quitButton.collidepoint(evento.pos):
                     #pygame.mixer.music.play(-1)
                     larguraButtonQuit = 150
