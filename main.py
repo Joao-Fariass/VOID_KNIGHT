@@ -36,6 +36,7 @@ fundoDead = pygame.image.load("Bases/Tela de morte.png")
 fundoStart = pygame.image.load("Bases/TELA DE INICIO.png")
 void = pygame.image.load("Bases/VOID.png")
 void = pygame.transform.scale(void, (220,250))
+void_esquerda = pygame.transform.flip(void, True, False)
 Inimigo_do_void = pygame.image.load("Bases/inimigo.png")
 Inimigo_do_void = pygame.transform.scale(Inimigo_do_void, (280,250))
 ataque = pygame.image.load("Bases/Ataque.png")
@@ -51,13 +52,20 @@ fonteMenu = pygame.font.SysFont("comicsans",18)
 
 #Variáveis iniciais do jogo
 def jogar():
-    posicaoXPersona = 0
+    posicaoXPersona = 390
     posicaoYPersona = 385
     movimentoXPersona  = 0
-    velocidadeMovPersona = 5
+    velocidadeMovPersona = 6
     posicaoXinimigo = 860
     posicaoYinimigo = 385
     velocidadeinimigo = 2
+
+    lado_inimigo = random.choice(["direita", "esquerda"])
+    if lado_inimigo == "direita":
+        posicaoXinimigo = 860
+    else:
+        posicaoXinimigo = -120
+
     pontos = 0
     vidas = 3 
     vidas_inimigo = 3
@@ -71,7 +79,7 @@ def jogar():
     direcao_ataque = direcao
     posicaoXataque = 0
     posicaoYataque = 0
-    pygame.mixer.Sound.play(som_inimgo)
+    som_inimgo.play(-1)
     pygame.mixer.music.play(-1)
     dificuldade = 20
 
@@ -95,15 +103,32 @@ def jogar():
                     direcao_ataque = direcao
                     pygame.mixer.Sound.play(som_ataque)
 
-                    if abs(posicaoXPersona - posicaoXinimigo) < 150:
+                    if direcao_ataque == "direita":
+                         acertou = posicaoXinimigo > posicaoXPersona and posicaoXinimigo < posicaoXPersona + 300
+                    else:
+                        acertou = posicaoXinimigo < posicaoXPersona and posicaoXinimigo - posicaoXPersona - 300
+
+                    if acertou:
                         vidas_inimigo = dano_inimigo(vidas_inimigo)
+
+                        
                         if vidas_inimigo <= 0:
                             pontos += 1
+                            velocidadeinimigo = 2 + (pontos // 5)
+                            cooldown_ataque = max(300, 500 - (pontos * 10))
+                            velocidadeMovPersona = min(8, 5 + (pontos // 10))
 
                             vidas, UltimoBonus = verificar_vida_extra(pontos,vidas,UltimoBonus)
 
                             vidas_inimigo = 3
-                            posicaoXinimigo = 860
+
+                            lado_inimigo = random.choice(["direita", "esquerda"])
+
+                            if lado_inimigo == "direita":
+                                 posicaoXinimigo = 860
+                            else:
+                                posicaoXinimigo = -120
+
                             posicaoYinimigo = 385
 
 
@@ -129,7 +154,10 @@ def jogar():
      
     
             #Movimento do inimigo (sempre para a esquerda)
-        posicaoXinimigo = posicaoXinimigo - velocidadeinimigo
+        if lado_inimigo == "direita":
+            posicaoXinimigo = posicaoXinimigo - velocidadeinimigo
+        else:
+            posicaoXinimigo = posicaoXinimigo + velocidadeinimigo
 
         #Quando o inimigo sai da tela
         if posicaoXinimigo < -125:
@@ -151,7 +179,10 @@ def jogar():
         
         
         #Desenhar personagem, inimigo e pontos
-        tela.blit(void, (posicaoXPersona,posicaoYPersona))
+        if direcao == "direita":
+            tela.blit(void, (posicaoXPersona,posicaoYPersona))
+        else: 
+            tela.blit(void_esquerda, (posicaoXPersona, posicaoYPersona))
         if mostrar_ataque:
             if direcao_ataque == "direita":
                 tela.blit(ataque,(posicaoXataque +120, 430))
@@ -178,9 +209,19 @@ def jogar():
         if  len( list( set(pixels_inimigoY).intersection(set(pixelsPersonaY))) ) > dificuldade:
             if len( list( set(pixels_inimigoX).intersection(set(pixelsPersonaX))   ) )  > dificuldade:
                 vidas = vidas - 1
-                posicaoXinimigo = 860
-                posicaoYinimigo = 385
                 vidas_inimigo = 3 
+
+
+                lado_inimigo = random.choice(["direita", "esquerda"])
+
+                if lado_inimigo == "direita":
+                    posicaoXinimigo = 860
+                else:
+                    posicaoXinimigo = -120
+
+                posicaoYinimigo = 385
+
+
                 if vidas <= 0:
                     escreverDados(nome,pontos)
                 
@@ -209,6 +250,8 @@ def dead():
     alturaButtonStart  = 40
     larguraButtonQuit = 150
     alturaButtonQuit  = 40
+    startButton = pygame.Rect(10, 10, larguraButtonStart, alturaButtonStart)
+    quitButton = pygame.Rect(10, 60, larguraButtonQuit, alturaButtonQuit)
     while True:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
