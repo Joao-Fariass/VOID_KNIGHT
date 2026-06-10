@@ -1,8 +1,10 @@
 import pygame
 import random
+import pyttsx3
 from recursos.Trabalho import inicializarBancoDeDados, limpar_tela, escreverDados, maior_pontuador
 from recursos.Trabalho import verificar_vida_extra
 from recursos.Trabalho import dano_inimigo
+
 
 #Preparação inicial
 
@@ -10,6 +12,7 @@ limpar_tela()
 inicializarBancoDeDados()
 nome_maior, maior_pontos, dataJogada = maior_pontuador()
 pygame.init()
+voz = pyttsx3.init()
 
 #Pedir nome do jogador
 while True:
@@ -100,7 +103,11 @@ def jogar():
         #movimentação
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT: #Fechar janela
+                    pygame.quit()
                     quit()
+            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_ESCAPE:
+                pygame.quit()
+                quit()
 
             elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_SPACE:
                 pausado = not pausado
@@ -134,10 +141,19 @@ def jogar():
                     direcao_ataque = direcao
                     pygame.mixer.Sound.play(som_ataque)
 
+                    alcance = 250
+
                     if direcao_ataque == "direita":
-                         acertou = posicaoXinimigo > posicaoXPersona and posicaoXinimigo < posicaoXPersona + 300
+                        acertou = (
+                            posicaoXinimigo > posicaoXPersona
+                            and posicaoXinimigo < posicaoXPersona + alcance
+                        )
                     else:
-                        acertou = posicaoXinimigo < posicaoXPersona and posicaoXinimigo - posicaoXPersona - 300
+                        acertou = (
+                            posicaoXinimigo < posicaoXPersona
+                             and posicaoXinimigo > posicaoXPersona - alcance
+                        )
+                    
 
                     if acertou:
                         vidas_inimigo = dano_inimigo(vidas_inimigo)
@@ -217,7 +233,7 @@ def jogar():
 
             velocidadeinimigo = velocidadeinimigo + 1
             posicaoYinimigo = random.randint(0,200)
-            morcegoX += velMorcegoX
+        morcegoX += velMorcegoX
         morcegoY += velMorcegoY
 
         if morcegoX < 0 or morcegoX > 920:
@@ -247,7 +263,7 @@ def jogar():
         pygame.draw.circle(tela, preto, (135, 80), int(raio_lua))
         tela.blit(morcego, (morcegoX, morcegoY))
         
-    
+     
         #Desenhar personagem, inimigo e pontos
         if direcao == "direita":
             tela.blit(void, (posicaoXPersona,posicaoYPersona))
@@ -297,7 +313,7 @@ def jogar():
                 if vidas <= 0:
                     escreverDados(nome,pontos)
                 
-                    dead()
+                    dead(pontos)
                     return
                 
             else:
@@ -310,12 +326,13 @@ def jogar():
         relogio.tick(60)
 
 #Função dead()
-def dead():
+def dead(pontos_partida):
 
     #Parar música e tocar musica de morte
     pygame.mixer.music.stop()
     pygame.mixer.Sound.play(musica_de_morte)
     som_inimgo.stop()
+    nome_maior, maior_pontos, dataJogada = maior_pontuador()
 
     #Botões da tela de morte
     larguraButtonStart = 150
@@ -327,7 +344,13 @@ def dead():
     while True:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
+                pygame.quit()
                 quit()
+            elif evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    quit()
+
             elif evento.type == pygame.MOUSEBUTTONDOWN: #usar botao do mouse
 
                 #Clique nos botões
@@ -360,6 +383,7 @@ def dead():
                     #pygame.mixer.music.play(-1)
                     larguraButtonQuit = 150
                     alturaButtonQuit  = 40
+                    pygame.quit()
                     quit()
             
         #Desenhar tela de morte
@@ -373,17 +397,36 @@ def dead():
         quitTexto = fonteMenu.render("Sair do Game", True, preto)
         tela.blit(quitTexto, (25,62))
 
+        textoPartida = fonteMenu.render(
+            f"Sua pontuacao: {pontos_partida}",
+            True,
+            branco
+        )
+
+        textoRecorde = fonteMenu.render(
+            f"Maior pontuador: {nome_maior} - {maior_pontos} pontos",
+            True,
+            branco
+        )
+
+        tela.blit(textoPartida, (500, 500))
+        tela.blit(textoRecorde, (500, 530))
 
         pygame.display.update()
         relogio.tick(60)
 
 def boas_vindas():
+
+    voz.say("Bem vindo ao Void Knight")
+    voz.runAndWait()
     larguraButtonStart = 220
     alturaButtonStart = 45
 
     while True:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
+
+                pygame.quit()
                 quit()
 
             elif evento.type == pygame.MOUSEBUTTONDOWN:
@@ -433,6 +476,7 @@ def start():
     while True:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
+                pygame.quit()
                 quit()
             elif evento.type == pygame.MOUSEBUTTONDOWN:
                 #Botões da tela inicial
@@ -458,6 +502,7 @@ def start():
                     #pygame.mixer.music.play(-1)
                     larguraButtonQuit = 150
                     alturaButtonQuit  = 40
+                    pygame.quit()
                     quit()
             
         tela.fill(branco)
