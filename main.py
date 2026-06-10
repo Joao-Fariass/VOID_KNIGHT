@@ -1,8 +1,8 @@
 import pygame
 import random
-from recursos.funcoes import inicializarBancoDeDados, limpar_tela, escreverDados, maior_pontuador
-from recursos.funcoes import verificar_vida_extra
-from recursos.funcoes import dano_inimigo
+from recursos.Trabalho import inicializarBancoDeDados, limpar_tela, escreverDados, maior_pontuador
+from recursos.Trabalho import verificar_vida_extra
+from recursos.Trabalho import dano_inimigo
 
 #Preparação inicial
 
@@ -80,19 +80,41 @@ def jogar():
     posicaoXataque = 0
     posicaoYataque = 0
     som_inimgo.play(-1)
+    pygame.mixer.music.load("Bases/combate.wav")
     pygame.mixer.music.play(-1)
     dificuldade = 20
+    pausado = False
+    fontePause = pygame.font.SysFont("comicsans", 60)
 
   
     while True:   # jogo rodando sem parar.
         #movimentação
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT: #Fechar janela
-                quit()
+                    quit()
 
+            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_SPACE:
+                pausado = not pausado
 
+                if pausado:
+                    pygame.mixer.music.stop()
+                    pygame.mixer.music.load("Bases/Som inicio do jogo.mp3")
+                    pygame.mixer.music.play(-1)
 
-            elif evento.type == pygame.MOUSEBUTTONDOWN:
+                    som_inimgo.stop()
+
+                else:
+                    pygame.mixer.music.stop()
+                    pygame.mixer.music.load("Bases/combate.wav")
+                    pygame.mixer.music.play(-1)
+
+                    som_inimgo.play(-1)
+
+            elif not pausado and (
+                evento.type == pygame.MOUSEBUTTONDOWN
+                or 
+                (evento.type == pygame.KEYDOWN and evento.key == pygame.K_RETURN)
+            ):
                 tempo_atual = pygame.time.get_ticks()
                 if tempo_atual - ultimo_ataque >= cooldown_ataque:
                     ultimo_ataque = tempo_atual
@@ -143,6 +165,20 @@ def jogar():
             elif evento.type == pygame.KEYUP and evento.key == pygame.K_LEFT or evento.type == pygame.KEYUP and evento.key == pygame.K_a:
                 movimentoXPersona = 0
                 
+
+        if pausado:
+            tela.blit(fundo, (0,0))
+
+            textoPause = fontePause.render("PAUSE", True, branco)
+            tela.blit(textoPause, (400, 300))
+
+            textoAjuda = fonteMenu.render("Press Space to Continue", True, branco)
+            tela.blit(textoAjuda, (400, 380))
+
+            pygame.display.update()
+            relogio.tick(60)
+            continue
+
         #Atualizar posição do personagem
         posicaoXPersona = posicaoXPersona + movimentoXPersona          
        
@@ -200,7 +236,9 @@ def jogar():
         tela.blit(textoVidaInimigo, (700,65))
         tela.blit(textoVidas,(700,40))
         tela.blit(texto, (700,15))
-            
+
+        textoPauseGame = fonteMenu.render("Press Space to Pause Game",True,branco)
+        tela.blit(textoPauseGame, (730, 650))
             #Colisão
         pixelsPersonaX = list(range(posicaoXPersona+100, posicaoXPersona+140))
         pixelsPersonaY = list(range(posicaoYPersona+40, posicaoYPersona+220))
@@ -305,6 +343,52 @@ def dead():
         pygame.display.update()
         relogio.tick(60)
 
+def boas_vindas():
+    larguraButtonStart = 220
+    alturaButtonStart = 45
+
+    while True:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                quit()
+
+            elif evento.type == pygame.MOUSEBUTTONDOWN:
+                if startButton.collidepoint(evento.pos):
+                    pygame.mixer.music.stop()
+                    jogar()
+                    return
+
+        tela.blit(fundoStart, (0,0))
+
+        titulo = fonteMenu.render("Bem-vindo ao Void Knight, " + nome + "!", True, branco)
+        explicacao1 = fonteMenu.render("Use A e D ou as setas para se mover.", True, branco)
+        explicacao2 = fonteMenu.render("Clique com o mouse ou com o ENTER para atacar os inimigos.", True, branco)
+        explicacao3 = fonteMenu.render("Sobreviva, ganhe pontos e bata o recorde!", True, branco)
+
+        recorde = fonteMenu.render(
+            f"Maior pontuador: {nome_maior} - {maior_pontos} pontos - {dataJogada}",
+            True,
+            branco
+        )
+
+        tela.blit(titulo, (300,270 ))
+        tela.blit(explicacao1, (260, 330))
+        tela.blit(explicacao2, (260, 360))
+        tela.blit(explicacao3, (260, 390))
+        tela.blit(recorde, (220, 450))
+
+        startButton = pygame.draw.rect(
+            tela,
+            branco,
+            (390, 600, larguraButtonStart, alturaButtonStart),
+            border_radius=15
+        )
+
+        textoBotao = fonteMenu.render("Iniciar partida", True, preto)
+        tela.blit(textoBotao, (430, 612))
+
+        pygame.display.update()
+        relogio.tick(60)
 
 #Função start()
 def start():
@@ -361,4 +445,4 @@ def start():
           #Começar o jogo 
 pygame.mixer.music.load("Bases/Som inicio do jogo.mp3")
 pygame.mixer.music.play(-1)
-start()
+boas_vindas()
