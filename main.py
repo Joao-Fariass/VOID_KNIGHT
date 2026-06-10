@@ -440,8 +440,8 @@ def boas_vindas():
         titulo = fonteMenu.render("Bem-vindo ao Void Knight, " + nome + "!", True, branco)
         explicacao1 = fonteMenu.render("Use A e D ou as setas para se mover.", True, branco)
         explicacao2 = fonteMenu.render("Clique com o mouse ou com o ENTER para atacar os inimigos.", True, branco)
-        explicacao3 = fonteMenu.render("Sobreviva, ganhe pontos e bata o recorde!", True, branco)
-
+        explicacao3 = fonteMenu.render("Use ESC para fechar o jogo", True, branco)
+        explicacao4 = fonteMenu.render("Sobreviva, ganhe pontos e bata o recorde!", True, branco)
         recorde = fonteMenu.render(
             f"Maior pontuador: {nome_maior} - {maior_pontos} pontos - {dataJogada}",
             True,
@@ -452,6 +452,7 @@ def boas_vindas():
         tela.blit(explicacao1, (260, 330))
         tela.blit(explicacao2, (260, 360))
         tela.blit(explicacao3, (260, 390))
+        tela.blit(explicacao4, (260, 420))
         tela.blit(recorde, (220, 450))
 
         startButton = pygame.draw.rect(
