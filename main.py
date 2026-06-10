@@ -42,6 +42,9 @@ Inimigo_do_void = pygame.transform.scale(Inimigo_do_void, (280,250))
 ataque = pygame.image.load("Bases/Ataque.png")
 ataque = pygame.transform.scale(ataque, (180, 120))
 ataque_esquerda =  pygame.transform.flip(ataque, True, False)
+morcego = pygame.image.load("Bases/morcego.png").convert_alpha()
+morcego = pygame.transform.scale(morcego, (180, 120))
+
 #Carregar sons e fonte
 som_inimgo = pygame.mixer.Sound("Bases/Som inimigo.wav")
 musica_de_morte = pygame.mixer.Sound("Bases/Musica de morte.mp3")
@@ -59,6 +62,8 @@ def jogar():
     posicaoXinimigo = 860
     posicaoYinimigo = 385
     velocidadeinimigo = 2
+    raio_lua = 35
+    crescendo_lua = True
 
     lado_inimigo = random.choice(["direita", "esquerda"])
     if lado_inimigo == "direita":
@@ -83,6 +88,10 @@ def jogar():
     pygame.mixer.music.load("Bases/combate.wav")
     pygame.mixer.music.play(-1)
     dificuldade = 20
+    morcegoX = random.randint(100, 850)
+    morcegoY = random.randint(50, 250)
+    velMorcegoX = random.choice([-2, -1, 1, 2])
+    velMorcegoY = random.choice([-2, -1, 1, 2])
     pausado = False
     fontePause = pygame.font.SysFont("comicsans", 60)
 
@@ -208,12 +217,37 @@ def jogar():
 
             velocidadeinimigo = velocidadeinimigo + 1
             posicaoYinimigo = random.randint(0,200)
+            morcegoX += velMorcegoX
+        morcegoY += velMorcegoY
+
+        if morcegoX < 0 or morcegoX > 920:
+            velMorcegoX *= -1
+
+        if morcegoY < 40 or morcegoY > 260:
+            velMorcegoY *= -1
+
+        if random.randint(1, 100) == 1:
+            velMorcegoX = random.choice([-2, -1, 1, 2])
+            velMorcegoY = random.choice([-2, -1, 1, 2])
+            
+        if crescendo_lua:
+            raio_lua += 0.2
+        else:
+            raio_lua -= 0.2
+
+        if raio_lua >= 45:
+            crescendo_lua = False
+        elif raio_lua <= 35:
+            crescendo_lua = True
                             
         #Desenhar fundo                            
         tela.fill(branco)
         tela.blit(fundo, (0,0) )
+        pygame.draw.circle(tela, (230, 230, 200), (120, 90), int(raio_lua))
+        pygame.draw.circle(tela, preto, (135, 80), int(raio_lua))
+        tela.blit(morcego, (morcegoX, morcegoY))
         
-        
+    
         #Desenhar personagem, inimigo e pontos
         if direcao == "direita":
             tela.blit(void, (posicaoXPersona,posicaoYPersona))
