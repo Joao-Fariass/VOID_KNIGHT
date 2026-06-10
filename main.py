@@ -104,10 +104,10 @@ def jogar():
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT: #Fechar janela
                     pygame.quit()
-                    quit()
+                    raise SystemExit()
             elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_ESCAPE:
                 pygame.quit()
-                quit()
+                raise SystemExit()
 
             elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_SPACE:
                 pausado = not pausado
@@ -345,11 +345,11 @@ def dead(pontos_partida):
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
-                quit()
+                raise SystemExit()
             elif evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_ESCAPE:
                     pygame.quit()
-                    quit()
+                    raise SystemExit()
 
             elif evento.type == pygame.MOUSEBUTTONDOWN: #usar botao do mouse
 
@@ -384,7 +384,7 @@ def dead(pontos_partida):
                     larguraButtonQuit = 150
                     alturaButtonQuit  = 40
                     pygame.quit()
-                    quit()
+                    raise SystemExit()
             
         #Desenhar tela de morte
         tela.fill(branco)
@@ -427,7 +427,7 @@ def boas_vindas():
             if evento.type == pygame.QUIT:
 
                 pygame.quit()
-                quit()
+                raise SystemExit()
 
             elif evento.type == pygame.MOUSEBUTTONDOWN:
                 if startButton.collidepoint(evento.pos):
@@ -478,7 +478,7 @@ def start():
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
-                quit()
+                raise SystemExit()
             elif evento.type == pygame.MOUSEBUTTONDOWN:
                 #Botões da tela inicial
                 if startButton.collidepoint(evento.pos):
@@ -504,7 +504,7 @@ def start():
                     larguraButtonQuit = 150
                     alturaButtonQuit  = 40
                     pygame.quit()
-                    quit()
+                    raise SystemExit()
             
         tela.fill(branco)
         tela.blit(fundoStart, (0,0))
