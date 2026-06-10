@@ -14,3 +14,5 @@ pyttsx3
 JSON (armazenamento de pontuações)
 cx_Freeze (geração do executável)
 Git
+
+Contribuição -> Arthur Saggin
